@@ -4,7 +4,7 @@ module PermalinkFu
 
     # This method does the actual permalink escaping.
     def escape(string)
-      result = ActiveSupport::Inflector.transliterate(string)
+      result = ActiveSupport::Inflector.transliterate(string).to_s
       result.gsub!(/[^\x00-\x7F]+/, '') # Remove anything non-ASCII entirely (e.g. diacritics).
       result.gsub!(/[^\w_ \-]+/i,   '') # Remove unwanted chars.
       result.gsub!(/[ \-]+/i,      '-') # No more than one of the separator in a row.
