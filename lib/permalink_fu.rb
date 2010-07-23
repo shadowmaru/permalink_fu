@@ -1,18 +1,10 @@
-begin
-  require 'iconv'
-rescue Object
-  puts "no iconv, you might want to look into it."
-end
-
 require 'digest/sha1'
 module PermalinkFu
   class << self
-    attr_accessor :translation_to
-    attr_accessor :translation_from
 
     # This method does the actual permalink escaping.
     def escape(string)
-      result = ((translation_to && translation_from) ? Iconv.iconv(translation_to, translation_from, string) : string).to_s
+      result = ActiveSupport::Inflector.transliterate(string)
       result.gsub!(/[^\x00-\x7F]+/, '') # Remove anything non-ASCII entirely (e.g. diacritics).
       result.gsub!(/[^\w_ \-]+/i,   '') # Remove unwanted chars.
       result.gsub!(/[ \-]+/i,      '-') # No more than one of the separator in a row.
@@ -22,7 +14,7 @@ module PermalinkFu
     rescue
       random_permalink(string)
     end
-    
+
     def random_permalink(seed = nil)
       Digest::SHA1.hexdigest("#{seed}#{Time.now.to_s.split(//).sort_by {rand}}")
     end
@@ -36,11 +28,11 @@ module PermalinkFu
     #   class Foo < ActiveRecord::Base
     #     # stores permalink form of #title to the #permalink attribute
     #     has_permalink :title
-    #   
+    #
     #     # stores a permalink form of "#{category}-#{title}" to the #permalink attribute
-    #   
+    #
     #     has_permalink [:category, :title]
-    #   
+    #
     #     # stores permalink form of #title to the #category_permalink attribute
     #     has_permalink [:category, :title], :category_permalink
     #
@@ -189,9 +181,4 @@ module PermalinkFu
       end
     end
   end
-end
-
-if Object.const_defined?(:Iconv)
-  PermalinkFu.translation_to   = 'ascii//translit//IGNORE'
-  PermalinkFu.translation_from = 'utf-8'
 end

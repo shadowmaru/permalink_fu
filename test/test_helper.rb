@@ -10,27 +10,30 @@ rescue LoadError
 end
 
 gem 'activerecord'
+gem 'activesupport'
 require 'active_record'
+require 'active_support/all'
 require File.join(File.dirname(__FILE__), '../init')
+$KCODE = 'u'
 
 class BaseModel < ActiveRecord::Base
   cattr_accessor :columns
   @@columns ||= []
-  
+
   def self.column(name, sql_type = nil, default = nil, null = true)
     columns << ActiveRecord::ConnectionAdapters::Column.new(name.to_s, default, sql_type, null)
   end
-  
+
   def self.exists?(*args)
     false
   end
-  
+
   column :id,         'int(11)'
   column :title,      'varchar(100)'
   column :permalink,  'varchar(100)'
   column :extra,      'varchar(100)'
   column :foo,        'varchar(100)'
-  
+
 end
 
 class ClassModel < BaseModel
@@ -46,7 +49,7 @@ end
 
 class MockModel < BaseModel
   def self.exists?(conditions)
-    if conditions[1] == 'foo'   || conditions[1] == 'bar' || 
+    if conditions[1] == 'foo'   || conditions[1] == 'bar' ||
       (conditions[1] == 'bar-2' && conditions[2] != 2)
       true
     else
@@ -107,19 +110,19 @@ end
 
 class OverrideModel < BaseModel
   has_permalink :title
-  
+
   def permalink
     'not the permalink'
   end
 end
 
 class ChangedWithoutUpdateModel < BaseModel
-  has_permalink :title  
+  has_permalink :title
   def title_changed?; true; end
 end
 
 class ChangedWithUpdateModel < BaseModel
-  has_permalink :title, :update => true 
+  has_permalink :title, :update => true
   def title_changed?; true; end
 end
 
@@ -134,7 +137,7 @@ end
 
 class IfMethodConditionModel < BaseModel
   has_permalink :title, :if => :false_method
-  
+
   def false_method; false; end
 end
 
@@ -148,7 +151,7 @@ end
 
 class UnlessMethodConditionModel < BaseModel
   has_permalink :title, :unless => :false_method
-  
+
   def false_method; false; end
 end
 
